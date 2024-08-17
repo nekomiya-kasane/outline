@@ -191,7 +191,7 @@ export default class Document extends ParanoidModel {
   publishedAt: string | undefined;
 
   @observable
-  archivedAt: string;
+  archivedAt: string | null;
 
   /**
    * @deprecated Use path instead
