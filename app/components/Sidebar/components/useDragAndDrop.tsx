@@ -148,6 +148,7 @@ export function useDragDocument(
         icon: icon ? <Icon value={icon} color={color} /> : undefined,
         collectionId: document?.collectionId || "",
       } as DragObject),
+    canDrag: () => !!document?.isActive,
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -220,6 +221,7 @@ export function useDropToReparentDocument(
       !!pathToNode &&
       !pathToNode.includes(monitor.getItem().id) &&
       item.id !== node.id &&
+      !!document?.isActive &&
       policies.abilities(node.id).update &&
       policies.abilities(item.id).move,
     hover: (_item, monitor) => {
@@ -272,6 +274,8 @@ export function useDropToReorderDocument(
   const { t } = useTranslation();
   const { documents, policies } = useStores();
 
+  const document = documents.get(node.id);
+
   return useDrop<
     DragObject,
     Promise<void>,
@@ -279,7 +283,7 @@ export function useDropToReorderDocument(
   >({
     accept: "document",
     canDrop: (item: DragObject) => {
-      if (item.id === node.id) {
+      if (item.id === node.id || !document?.isActive) {
         return false;
       }
 
