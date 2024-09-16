@@ -1032,6 +1032,7 @@ class Document extends ParanoidModel<
 
     if (!this.template && this.publishedAt && collection?.isActive) {
       await collection.addDocumentToStructure(this, undefined, {
+        includeArchived: true,
         transaction,
       });
     }
@@ -1100,7 +1101,7 @@ class Document extends ParanoidModel<
    * @returns Promise resolving to a NavigationNode
    */
   toNavigationNode = async (
-    options?: FindOptions<Document>
+    options?: FindOptions<Document> & { includeArchived?: boolean }
   ): Promise<NavigationNode> => {
     // Checking if the record is new is a performance optimization – new docs cannot have children
     const childDocuments = this.isNewRecord
@@ -1109,16 +1110,24 @@ class Document extends ParanoidModel<
           .unscoped()
           .scope("withoutState")
           .findAll({
-            where: {
-              teamId: this.teamId,
-              parentDocumentId: this.id,
-              archivedAt: {
-                [Op.is]: null,
-              },
-              publishedAt: {
-                [Op.ne]: null,
-              },
-            },
+            where: options?.includeArchived
+              ? {
+                  teamId: this.teamId,
+                  parentDocumentId: this.id,
+                  publishedAt: {
+                    [Op.ne]: null,
+                  },
+                }
+              : {
+                  teamId: this.teamId,
+                  parentDocumentId: this.id,
+                  publishedAt: {
+                    [Op.ne]: null,
+                  },
+                  archivedAt: {
+                    [Op.is]: null,
+                  },
+                },
             transaction: options?.transaction,
           });
 
