@@ -1039,6 +1039,8 @@ class Document extends ParanoidModel<
 
     if (this.deletedAt) {
       await this.restore({ transaction });
+      this.collectionId = collectionId;
+      await this.save({ transaction });
     }
 
     if (this.archivedAt) {
